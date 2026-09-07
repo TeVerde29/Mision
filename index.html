@@ -197,10 +197,6 @@
     width:100%; height:600px; border-radius:6px; border:1px solid var(--border-soft);
     background:var(--panel-2); position:relative; z-index:0;
   }
-  [data-theme="light"] .leaflet-tile-pane{ filter:none; }
-  [data-theme="dark"] .leaflet-tile-pane, :root:not([data-theme="light"]) .leaflet-tile-pane{
-    filter: brightness(0.88) saturate(0.85) hue-rotate(2deg);
-  }
   @media (max-width:900px){ #map{ height:420px; } }
 
   .pick-banner{
@@ -216,6 +212,21 @@
   .pick-banner button:hover{ border-color:var(--danger); color:var(--danger); }
 
   .leaflet-container.picking, .leaflet-container.picking .leaflet-interactive{ cursor:crosshair !important; }
+
+  /* Toggle de vista de mapa 3D / 2D */
+  .map-view-toggle{
+    display:flex; background:var(--panel); border:1px solid var(--border); border-radius:6px;
+    overflow:hidden; box-shadow:0 4px 14px rgba(0,0,0,0.35); margin-top:0 !important;
+  }
+  .map-view-toggle .mvt-btn{
+    border:none; background:transparent; color:var(--text-dim); font-family:var(--font-mono);
+    font-size:11.5px; font-weight:600; letter-spacing:.03em; padding:7px 13px; line-height:1;
+    transition:background .15s, color .15s; cursor:pointer;
+  }
+  .map-view-toggle .mvt-btn + .mvt-btn{ border-left:1px solid var(--border); }
+  .map-view-toggle .mvt-btn:hover{ background:var(--panel-2); color:var(--text); }
+  .map-view-toggle .mvt-btn.active{ background:var(--accent); color:#04201c; }
+  [data-theme="light"] .map-view-toggle .mvt-btn.active{ color:#ffffff; }
 
   .legend{ display:flex; flex-wrap:wrap; gap:12px; padding:10px 12px 12px; font-size:11.5px; color:var(--text-dim); }
   .legend span{ display:inline-flex; align-items:center; gap:6px; }
@@ -451,8 +462,8 @@
 
   const STORAGE_KEY = 'misionapp-data';
   const THEME_KEY = 'misionapp-theme';
-  const DEFAULT_CENTER = [-8.3845, -74.5580]; // Pucallpa, Perú
-  const DEFAULT_ZOOM = 14;
+  const DEFAULT_CENTER = [-9.19, -75.0152]; // Perú (vista completa del país)
+  const DEFAULT_ZOOM = 5;
 
   const STATUS_LABEL = { no:'No visitada', visited:'Visitada', pending:'Pendiente' };
   const STATUS_CLASS = { no:'status-no', visited:'status-visited', pending:'status-pending' };
@@ -490,15 +501,9 @@
   /* ============== STATE ============== */
   function getDefaultState(){
     return {
-      churches: [
-        { id:1, name:'Iglesia Central', lat:-8.3845, lng:-74.5580 }
-      ],
-      houses: [
-        { id:2, name:'Familia Ramírez', lat:-8.3900, lng:-74.5500, address:'Jr. Tacna 450', phone:'', status:'no', notes:'', date:'' },
-        { id:3, name:'Familia Torres', lat:-8.3790, lng:-74.5620, address:'Av. Sáenz Peña 210', phone:'961234567', status:'visited', notes:'Buena disposición para estudio bíblico.', date: todayISO() },
-        { id:4, name:'Familia Quispe', lat:-8.3860, lng:-74.5450, address:'', phone:'', status:'pending', notes:'Volver el sábado por la tarde.', date:'' }
-      ],
-      nextId: 5
+      churches: [],
+      houses: [],
+      nextId: 1
     };
   }
 
@@ -540,10 +545,51 @@
 
   /* ============== MAP ============== */
   const map = L.map('map', { zoomControl:true }).setView(DEFAULT_CENTER, DEFAULT_ZOOM);
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+
+  /* Capa 2D: mapa estándar OpenStreetMap */
+  const topoLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>'
   }).addTo(map);
+
+  /* Capa 3D: imagen satelital/aérea con relieve (Esri World Imagery) */
+  const satelliteLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    maxZoom: 19,
+    maxNativeZoom: 17,
+    errorTileUrl: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
+    attribution: 'Tiles &copy; Esri &mdash; Source: Esri, Maxar, Earthstar Geographics, and the GIS User Community'
+  });
+
+  /* Control flotante 3D / 2D (arriba a la derecha del mapa) */
+  let currentMapView = '2d';
+  const mapViewToggle = L.control({ position:'topright' });
+  mapViewToggle.onAdd = function(){
+    const container = L.DomUtil.create('div', 'leaflet-bar map-view-toggle');
+    container.innerHTML =
+      '<button type="button" class="mvt-btn" id="btn3D" title="Vista satelital con relieve">3D</button>' +
+      '<button type="button" class="mvt-btn active" id="btn2D" title="Vista topográfica plana">2D</button>';
+    L.DomEvent.disableClickPropagation(container);
+    L.DomEvent.disableScrollPropagation(container);
+    return container;
+  };
+  mapViewToggle.addTo(map);
+
+  function setMapView(view){
+    if(view === currentMapView) return;
+    const btn3D = $('#btn3D'), btn2D = $('#btn2D');
+    if(view === '3d'){
+      map.removeLayer(topoLayer);
+      satelliteLayer.addTo(map);
+      btn3D.classList.add('active'); btn2D.classList.remove('active');
+    } else {
+      map.removeLayer(satelliteLayer);
+      topoLayer.addTo(map);
+      btn2D.classList.add('active'); btn3D.classList.remove('active');
+    }
+    currentMapView = view;
+  }
+  $('#btn3D').addEventListener('click', ()=> setMapView('3d'));
+  $('#btn2D').addEventListener('click', ()=> setMapView('2d'));
 
   const churchLayer = L.layerGroup().addTo(map);
   const houseLayer = L.layerGroup().addTo(map);
