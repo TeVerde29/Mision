@@ -1,0 +1,84 @@
+- generic [ref=e2]:
+  - generic [ref=e3]:
+    - generic [ref=e4]:
+      - generic [ref=e5]: REGISTRO DE VISITAS
+      - heading "⛪ MisionApp" [level=1] [ref=e7]
+      - paragraph [ref=e8]: Registra las iglesias desde donde partes y las casas que visitas, con su estado y ubicación en el mapa.
+    - generic [ref=e9]:
+      - button "Cambiar a tema oscuro" [ref=e10] [cursor=pointer]
+      - button "Exportar" [ref=e13] [cursor=pointer]
+      - button "Importar" [ref=e17] [cursor=pointer]
+  - generic [ref=e21]:
+    - generic [ref=e22]:
+      - generic [ref=e23]: Total de casas
+      - generic [ref=e24]: "0"
+    - generic [ref=e25]:
+      - generic [ref=e26]: Visitadas
+      - generic [ref=e27]: "0"
+    - generic [ref=e28]:
+      - generic [ref=e29]: Pendientes
+      - generic [ref=e30]: "0"
+  - generic [ref=e31]:
+    - generic [ref=e32]:
+      - generic [ref=e33]:
+        - generic [ref=e34]:
+          - heading "Iglesias 0" [level=3] [ref=e35]:
+            - text: Iglesias
+            - generic [ref=e36]: "0"
+          - button "Agregar iglesia" [ref=e37] [cursor=pointer]
+        - table [ref=e42]:
+          - rowgroup [ref=e43]:
+            - row [ref=e44]:
+              - columnheader "Nombre" [ref=e45]
+              - columnheader "Acciones" [ref=e46]
+          - rowgroup [ref=e47]:
+            - row [ref=e48]:
+              - cell "Aún no agregaste ninguna iglesia." [ref=e49]
+      - generic [ref=e50]:
+        - generic [ref=e51]:
+          - heading "Casas 0" [level=3] [ref=e52]:
+            - text: Casas
+            - generic [ref=e53]: "0"
+          - button "Agregar casa" [ref=e54] [cursor=pointer]
+        - generic [ref=e57]:
+          - generic [ref=e58]:
+            - button "Todas" [ref=e59] [cursor=pointer]
+            - button "No visitadas" [ref=e60] [cursor=pointer]
+            - button "Visitadas" [ref=e61] [cursor=pointer]
+            - button "Pendientes" [ref=e62] [cursor=pointer]
+          - table [ref=e64]:
+            - rowgroup [ref=e65]:
+              - row [ref=e66]:
+                - columnheader "Nombre" [ref=e67]
+                - columnheader "Estado" [ref=e68]
+                - columnheader "Fecha" [ref=e69]
+                - columnheader "Acciones" [ref=e70]
+            - rowgroup [ref=e71]:
+              - row [ref=e72]:
+                - cell "No hay casas en este filtro." [ref=e73]
+    - generic [ref=e75]:
+      - heading "Mapa" [level=3] [ref=e77]
+      - generic [ref=e78]:
+        - textbox "Buscar dirección, barrio o ciudad…" [ref=e79]
+        - button [ref=e80] [cursor=pointer]
+      - button "Mi ubicación" [ref=e85] [cursor=pointer]
+      - generic [ref=e90]:
+        - generic:
+          - generic [ref=e91]:
+            - button "Zoom in" [ref=e92] [cursor=pointer]: +
+            - button "Zoom out" [ref=e93] [cursor=pointer]: −
+          - generic [ref=e94]:
+            - button "3D" [ref=e95] [cursor=pointer]
+            - button "2D" [ref=e96] [cursor=pointer]
+          - generic [ref=e97]:
+            - link "Leaflet" [ref=e98] [cursor=pointer]:
+              - /url: https://leafletjs.com
+            - text: "| ©"
+            - link "OpenStreetMap" [ref=e103] [cursor=pointer]:
+              - /url: https://www.openstreetmap.org/copyright
+      - generic [ref=e104]:
+        - generic [ref=e105]: Iglesia
+        - generic [ref=e107]: No visitada
+        - generic [ref=e109]: Visitada
+        - generic [ref=e111]: Pendiente
+        - generic [ref=e113]: Mi ubicación

@@ -1,11 +1,11 @@
 # MisionApp — registro de visitas de iglesias y casas en mapa
 
-> App estática de un solo archivo que registra iglesias de partida y casas visitadas, con estado, fecha y marcadores sobre Leaflet.
+> App estática sin build que registra iglesias de partida y casas visitadas, con estado, fecha y marcadores sobre Leaflet.
 
 [![Estado: activo](https://img.shields.io/badge/Estado-activo-337652)](https://github.com/TeVerde29/Mision)
-[![HTML5](https://img.shields.io/badge/HTML5-index.html-294635)](index.html)
+[![HTML + CSS + JS](https://img.shields.io/badge/HTML_CSS_JS-index_styles_app-294635)](index.html)
 [![Leaflet 1.9.4](https://img.shields.io/badge/Leaflet-1.9.4-4F7256)](https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js)
-[![Sin build](https://img.shields.io/badge/build-no_requerido-DDE8C8)](index.html)
+[![Sin build](https://img.shields.io/badge/build-no_requerido-DDE8C8)](app.js)
 
 ## Capturas
 
@@ -40,9 +40,9 @@ Los misioneros registran iglesias y casas desde el mapa. Los coordinadores filtr
 
 ## Descripción
 
-MisionApp existe porque el registro de visitas en papel se pierde y no muestra dónde queda cada casa. El sistema resuelve eso con un mapa centrado en Perú (`DEFAULT_CENTER = [-9.19, -75.0152]`, zoom 5 en `index.html`) donde cada iglesia y cada casa es un marcador con su ficha.
+MisionApp existe porque el registro de visitas en papel se pierde y no muestra dónde queda cada casa. El sistema resuelve eso con un mapa centrado en Perú (`DEFAULT_CENTER = [-9.19, -75.0152]`, zoom 5 en `app.js`) donde cada iglesia y cada casa es un marcador con su ficha.
 
-Todo vive en `index.html` (unos 1040 líneas, sin `package.json`, sin backend). La UI se divide en tres bloques: fila de KPIs (`kpiTotal`, `kpiVisited`, `kpiPending`), columna izquierda con las tablas de iglesias (`churchTbody`) y casas (`houseTbody` con tabs `houseTabs`), y columna derecha con el panel del mapa (`#map`, `#searchInput`, `#btnLocateMe`, leyenda). Un único modal (`modalOverlay`) sirve para crear y editar ambos tipos de registro, y el modo picking (`startPicking` / `finishPicking` / `cancelPicking`) obliga a elegir la ubicación con clic en el mapa antes de guardar.
+Todo vive en tres archivos junto a la raíz, sin `package.json` ni backend: `index.html` (175 líneas, estructura y referencias), `styles.css` (319 líneas, sistema Tea Green con custom properties) y `app.js` (584 líneas, IIFE con estado y Leaflet). La UI se divide en tres bloques: fila de KPIs (`kpiTotal`, `kpiVisited`, `kpiPending`), columna izquierda con las tablas de iglesias (`churchTbody`) y casas (`houseTbody` con tabs `houseTabs`), y columna derecha con el panel del mapa (`#map`, `#searchInput`, `#btnLocateMe`, leyenda). Un único modal (`modalOverlay`) sirve para crear y editar ambos tipos de registro, y el modo picking (`startPicking` / `finishPicking` / `cancelPicking` en `app.js`) obliga a elegir la ubicación con clic en el mapa antes de guardar.
 
 Decisiones clave: no hay base de datos ni cálculo en servidor, todo se recalcula desde `localStorage` bajo la clave `misionapp-data`; los IDs son enteros correlativos con `nextId` y `computeNextId`; las fechas se guardan en ISO (`yyyy-mm-dd`) y se muestran como `dd/mm/aaaa` con `fmtDate`; los estados son cerrados (`no`, `visited`, `pending`) con etiquetas en español.
 
@@ -70,9 +70,9 @@ Decisiones clave: no hay base de datos ni cálculo en servidor, todo se recalcul
 
 | Capa | Tecnología | Función |
 |---|---|---|
-| UI | HTML5 + CSS3 en `index.html` | Estructura y sistema de diseño Tea Green con custom properties, sin framework |
-| Tipografía | Space Grotesk + Inter (Google Fonts) | Titulares y texto/UI |
-| Lógica | JavaScript vanilla en IIFE | Estado, renders, modal, picking, import/export |
+| UI | HTML5 en `index.html` + CSS3 en `styles.css` | Estructura y sistema de diseño Tea Green con custom properties, sin framework |
+| Tipografía | Space Grotesk + Inter (Google Fonts, `index.html`) | Titulares y texto/UI |
+| Lógica | JavaScript vanilla en `app.js` (IIFE) | Estado, renders, modal, picking, import/export |
 | Mapa | Leaflet 1.9.4 (CDN cdnjs) | Capas `churchLayer`, `houseLayer`, `meLayer`, `divIcon` propios |
 | Teselas 2D | OpenStreetMap `tile.openstreetmap.org` | Vista topográfica plana |
 | Teselas 3D | Esri World Imagery `server.arcgisonline.com` | Vista satelital (`maxNativeZoom: 17`) |
@@ -83,7 +83,9 @@ Decisiones clave: no hay base de datos ni cálculo en servidor, todo se recalcul
 
 ```text
 Mision/
-├── index.html   # App completa: <style> Tea Green, HTML de KPIs/tablas/mapa/modal, <script> con estado y Leaflet
+├── index.html   # Estructura: KPIs, tablas de iglesias/casas, mapa, modal; enlaza styles.css, Leaflet CDN y app.js
+├── styles.css   # Sistema Tea Green: tokens claro/oscuro, botones píldora, tarjetas, tabs, mapa, modal, responsive
+├── app.js       # Estado, renders, picking, Nominatim, geolocalización, export/import, tema
 ├── img/
 │   ├── panel.png  # Captura escritorio: KPIs, tablas y mapa
 │   └── movil.png  # Captura móvil 390 px
@@ -91,7 +93,7 @@ Mision/
 └── .git/          # Historial (origen: https://github.com/TeVerde29/Mision.git)
 ```
 
-- **Sin backend ni build:** no hay `package.json`, no hay compilación; `index.html` se abre o se sirve tal cual.
+- **Sin backend ni build:** no hay `package.json`, no hay compilación; `index.html` se abre o se sirve tal cual con `styles.css` y `app.js` al lado.
 - **Estado en memoria + `localStorage`:** `state = { churches, houses, nextId }`; `saveState` serializa, `loadState` valida la forma antes de aceptar.
 - **Render por funciones puras de UI:** `renderChurches`, `renderHouses`, `redrawMarkers`, orquestadas por `renderAll`; delegación de clics con `data-action="edit|delete|fly"`.
 - **Un modal para dos entidades:** `modalType` (`church` | `house`), `modalEditId`, `modalLocation`; `setModalFieldsVisibility` oculta dirección/teléfono/estado/fecha/notas cuando es iglesia.
